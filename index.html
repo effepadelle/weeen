@@ -321,16 +321,20 @@ input.small { width: 82px; }
   const SEED_KEY = "weeen-seed-11-31";
   const SEED = [{"id":"r11","start":1794349299000,"end":1794349377000},{"id":"r12","start":1794349953000,"end":1794349992000},{"id":"r13","start":1794350151000,"end":1794350205000},{"id":"r14","start":1794350697000,"end":1794350746000},{"id":"r15","start":1794351117000,"end":1794351165000},{"id":"r16","start":1794351284000,"end":1794351321000},{"id":"r17","start":1794351498000,"end":1794351538000},{"id":"r18","start":1794352086000,"end":1794352131000},{"id":"r19","start":1794352341000,"end":1794352390000},{"id":"r20","start":1794352541000,"end":1794352576000},{"id":"r21","start":1794352700000,"end":1794352742000},{"id":"r22","start":1794352962000,"end":1794353003000},{"id":"r23","start":1794353159000,"end":1794353194000},{"id":"r24","start":1794353421000,"end":1794353470000},{"id":"r25","start":1794353662000,"end":1794353721000},{"id":"r26","start":1794353860000,"end":1794353920000},{"id":"r27","start":1794354120000,"end":1794354177000},{"id":"r28","start":1794354333000,"end":1794354383000},{"id":"r29","start":1794354532000,"end":1794354583000},{"id":"r30","start":1794354718000,"end":1794354772000},{"id":"r31","start":1794354940000,"end":1794354985000}];
 
+  // Weeën 32-35, schermafbeelding 01:11.
+  const SEED2_KEY = "weeen-seed-32-35";
+  const SEED2 = [{"id":"r32","start":1794355195000,"end":1794355240000},{"id":"r33","start":1794355355000,"end":1794355407000},{"id":"r34","start":1794355622000,"end":1794355673000},{"id":"r35","start":1794355824000,"end":1794355894000}];
+
+  function applySeed(key, list, setNr) {
+    if (localStorage.getItem(key)) return;
+    const before = sorted()[0];
+    if (setNr && (!before || before.start > list[0].start)) localStorage.setItem(NR_KEY, "11");
+    for (const d of list) if (!items.some((i) => i.id === d.id || Math.abs(i.start - d.start) < 20000)) items.push({ ...d });
+    save();
+    localStorage.setItem(key, "1");
+  }
   items = load();
-  try {
-    if (!localStorage.getItem(SEED_KEY)) {
-      const before = sorted()[0];
-      if (!before || before.start > SEED[0].start) localStorage.setItem(NR_KEY, "11");
-      for (const d of SEED) if (!items.some((i) => i.id === d.id || Math.abs(i.start - d.start) < 20000)) items.push({ ...d });
-      save();
-      localStorage.setItem(SEED_KEY, "1");
-    }
-  } catch (e) {}
+  try { applySeed(SEED_KEY, SEED, true); applySeed(SEED2_KEY, SEED2, false); } catch (e) {}
   render();
 })();
 </script>
