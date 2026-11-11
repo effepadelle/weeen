@@ -64,9 +64,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .rows { position: relative; }
 .row, .sep { display: grid; grid-template-columns: 1fr 76px 1fr; align-items: center; height: 70px; position: relative; }
 .sep { height: 44px; }
-.row::before, .sep::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 22px; margin-left: -11px; background: var(--chip); z-index: 0; }
-.rows > :first-child::before { top: 50%; }
-.rows > :last-child::before { bottom: 50%; }
+.rows.has::before { content: ""; position: absolute; left: 50%; top: 35px; bottom: 35px; width: 22px; margin-left: -11px; background: var(--chip); z-index: 0; }
 .dur { text-align: center; cursor: pointer; }
 .dur .a { font-size: 1.55rem; font-variant-numeric: tabular-nums; }
 .dur .b { font-size: 0.85rem; color: var(--dim); font-variant-numeric: tabular-nums; }
@@ -170,6 +168,8 @@ input.small { width: 82px; }
   const running = () => sorted().filter((i) => i.end == null).pop() || null;
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
+  const NR_KEY = "weeen-suzy-first-nr";
+  function firstNr() { try { const n = parseInt(localStorage.getItem(NR_KEY) || "1", 10); return n > 0 ? n : 1; } catch (e) { return 1; } }
   function load() { try { const v = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
   function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch (e) {} }
   function put(item) {
@@ -214,6 +214,7 @@ input.small { width: 82px; }
   function renderRows() {
     const s = sorted(), box = $("rows");
     $("heads").hidden = !s.length;
+    box.classList.toggle("has", s.length > 1);
     if (!s.length) { box.innerHTML = '<div class="empty">Nog geen weeën. Tik op de groene knop als er een begint, of op + om er een achteraf in te vullen.</div>'; return; }
     const html = [];
     for (let k = s.length - 1; k >= 0; k--) {
@@ -222,7 +223,7 @@ input.small { width: 82px; }
       html.push(
         '<div class="row' + (live ? " live" : "") + '">' +
           '<div class="dur" data-id="' + i.id + '"><div class="a">' + (live ? fmtDur(Date.now() - i.start) : fmtDur(i.end - i.start)) + '</div><div class="b">' + hhmm(i.start) + '</div></div>' +
-          '<button class="dot" type="button" data-id="' + i.id + '" aria-label="Wee ' + (k + 1) + ' aanpassen">' + (k + 1) + '</button>' +
+          '<button class="dot" type="button" data-id="' + i.id + '" aria-label="Wee ' + (k + firstNr()) + ' aanpassen">' + (k + firstNr()) + '</button>' +
           '<div class="freq">' + (prev ? fmtDur(i.start - prev.start) : "") + '</div>' +
         '</div>'
       );
@@ -257,7 +258,7 @@ input.small { width: 82px; }
   function openEdit(id) {
     const s = sorted(), idx = s.findIndex((i) => i.id === id), item = s[idx];
     if (!item) return;
-    openSheet('<h2>Wee ' + (idx + 1) + ' aanpassen</h2>' + editorFields(item) +
+    openSheet('<h2>Wee ' + (idx + firstNr()) + ' aanpassen</h2>' + editorFields(item) +
       (item.end == null ? '<p>Deze wee loopt nog. Laat de duur leeg om hem door te laten lopen.</p>' : '') +
       '<div class="btns"><button class="btn pri" id="fSave" type="button">Opslaan</button><button class="btn" id="fCancel" type="button">Annuleren</button><button class="btn del" id="fDel" type="button">Verwijderen</button></div>');
     $("fSave").onclick = () => { const r = readFields(item.end == null); if (r.err) { $("fErr").textContent = r.err; return; } put({ id: item.id, start: r.start, end: r.end }); closeSheet(); };
@@ -278,8 +279,10 @@ input.small { width: 82px; }
       '<div class="btns"><button class="btn" id="cpBtn" type="button">Lijst kopiëren</button></div>' +
       '<textarea id="imp" placeholder="Plak hier een lijst"></textarea>' +
       '<div class="btns"><button class="btn pri" id="impBtn" type="button">Toevoegen uit lijst</button><button class="btn" id="fCancel" type="button">Sluiten</button></div>' +
-      '<div id="msg"></div>');
+      '<div id="msg"></div>' +
+      '<div class="fields"><label>Nummer van de eerste wee in de lijst<input class="small" type="number" inputmode="numeric" min="1" id="nrIn" value="' + firstNr() + '"></label></div>');
     const msg = (t, ok) => { $("msg").className = ok ? "ok" : "err"; $("msg").textContent = t; };
+    $("nrIn").oninput = () => { const n = parseInt($("nrIn").value, 10); if (n > 0) { try { localStorage.setItem(NR_KEY, String(n)); } catch (e) {} render(); } };
     $("fCancel").onclick = closeSheet;
     $("cpBtn").onclick = () => {
       const text = JSON.stringify(sorted());
@@ -292,6 +295,8 @@ input.small { width: 82px; }
       try { data = JSON.parse($("imp").value.trim()); } catch (e) { msg("Dit is geen geldige lijst. Plak de tekst precies zoals je hem kreeg.", false); return; }
       if (!Array.isArray(data)) { msg("Dit is geen geldige lijst.", false); return; }
       let added = 0;
+      const m = !items.length && data[0] && /^r(\d+)$/.exec(String(data[0].id || ""));
+      if (m) { try { localStorage.setItem(NR_KEY, m[1]); } catch (e) {} }
       for (const d of data) {
         const start = Number(d && d.start), end = d && d.end != null ? Number(d.end) : null;
         if (!isFinite(start) || (end != null && !(end > start))) continue;
