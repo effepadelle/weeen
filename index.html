@@ -325,16 +325,20 @@ input.small { width: 82px; }
   const SEED2_KEY = "weeen-seed-32-35";
   const SEED2 = [{"id":"r32","start":1794355195000,"end":1794355240000},{"id":"r33","start":1794355355000,"end":1794355407000},{"id":"r34","start":1794355622000,"end":1794355673000},{"id":"r35","start":1794355824000,"end":1794355894000}];
 
-  function applySeed(key, list, setNr) {
+  // Weeën 1-10, schermopname 01:12.
+  const SEED3_KEY = "weeen-seed-1-10";
+  const SEED3 = [{"id":"r1","start":1794332548000,"end":1794332593000},{"id":"r2","start":1794334379000,"end":1794334410000},{"id":"r3","start":1794334843000,"end":1794334885000},{"id":"r4","start":1794344850000,"end":1794344901000},{"id":"r5","start":1794345334000,"end":1794345354000},{"id":"r6","start":1794346459000,"end":1794346513000},{"id":"r7","start":1794346914000,"end":1794346987000},{"id":"r8","start":1794347620000,"end":1794347662000},{"id":"r9","start":1794347999000,"end":1794348049000},{"id":"r10","start":1794348412000,"end":1794348471000}];
+
+  function applySeed(key, list, nr) {
     if (localStorage.getItem(key)) return;
     const before = sorted()[0];
-    if (setNr && (!before || before.start > list[0].start)) localStorage.setItem(NR_KEY, "11");
+    if (nr && (!before || before.start > list[0].start)) localStorage.setItem(NR_KEY, nr);
     for (const d of list) if (!items.some((i) => i.id === d.id || Math.abs(i.start - d.start) < 20000)) items.push({ ...d });
     save();
     localStorage.setItem(key, "1");
   }
   items = load();
-  try { applySeed(SEED_KEY, SEED, true); applySeed(SEED2_KEY, SEED2, false); } catch (e) {}
+  try { applySeed(SEED_KEY, SEED, "11"); applySeed(SEED2_KEY, SEED2, null); applySeed(SEED3_KEY, SEED3, "1"); } catch (e) {}
   render();
 })();
 </script>

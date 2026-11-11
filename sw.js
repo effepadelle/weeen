@@ -1,5 +1,5 @@
 // Works without internet: try the network first (so updates arrive), fall back to the saved copy.
-const CACHE = "weeen-v5";
+const CACHE = "weeen-v6";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
